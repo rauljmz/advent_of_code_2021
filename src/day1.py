@@ -8,11 +8,13 @@ def count_increases(values: Iterable):
 def window3(values: Iterable):
     return list(map(lambda x,y,z: x+y+z, values, values[1:], values[2:]))
 
-if __name__ == "__main__":
-    path = sys.argv[1]
+def main(path):
     data = []
     with open(path, "r", encoding="utf-8") as file:
         for line in file:
             data.append(int(line))
-    print(f"{len(data)} values")
-    print(f"{count_increases(window3(data))} are increasing over the previous")
+    
+    return count_increases(window3(data))
+
+if __name__ == "__main__":
+    print(f"{main(sys.argv[1])} are increasing over the previous")

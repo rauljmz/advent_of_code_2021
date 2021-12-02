@@ -40,3 +40,7 @@ class TestDay1SlidingWindow3:
 
     def test_aggregates_array_6_values(self):
         assert day1.window3([1,2,3,0,0,2]) == [6,5,3,2]
+
+class TestDay1:
+    def test_sample_data_returns_3(self):
+        assert day1.main('./data/day1/test.txt') == 1
