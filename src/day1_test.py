@@ -30,3 +30,13 @@ class TestDay1CountIncreases:
 
     def test_sample_input_returns_(self):
         assert day1.count_increases([199,200,208,210,200,207,240,269,260,263]) == 7
+
+class TestDay1SlidingWindow3:
+    def test_aggregates_array_3_values(self):
+        assert day1.window3([1,2,3]) == [6]
+ 
+    def test_aggregates_array_4_values(self):
+        assert day1.window3([1,2,3,4]) == [6,9]
+
+    def test_aggregates_array_6_values(self):
+        assert day1.window3([1,2,3,0,0,2]) == [6,5,3,2]
