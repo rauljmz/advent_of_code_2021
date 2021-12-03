@@ -16,6 +16,10 @@ def to_decimal(arr):
     return (arr*to_decimal_array).sum()
 
 
+def most_common_digit(np_array: np.array):
+    return np.floor(np_array.mean(axis=0) + 0.5).astype('int')
+
+
 def part1(path):
     data = read_data(path)
     gamma_array = data.mean(axis=0).round().astype('int')
@@ -23,5 +27,28 @@ def part1(path):
     return to_decimal(gamma_array) * to_decimal(epsilon_array)
 
 
+def calculate_oxygen(data, column_no=0):
+    column = data[:, column_no]
+    most_common_digit_in_column = most_common_digit(column)
+    mask = column == most_common_digit_in_column
+    oxygen = data[mask]
+    return calculate_oxygen(oxygen, column_no + 1) if len(oxygen) > 1 else to_decimal(oxygen[0])
+
+
+def calculate_co2(data, column_no=0):
+    column = data[:, column_no]
+    most_common_digit_in_column = most_common_digit(column)
+    mask = column != most_common_digit_in_column
+    co2 = data[mask]
+    return calculate_co2(co2, column_no + 1) if len(co2) > 1 else to_decimal(co2[0])
+
+
+def part2(path):
+    data = read_data(path)
+    oxygen = calculate_oxygen(data)
+    co2 = calculate_co2(data)
+    return oxygen * co2
+
+
 if __name__ == "__main__":
-    print(f"{part1(sys.argv[1])} result of multiplying position")
+    print(f"{part2(sys.argv[1])} result of multiplying position")

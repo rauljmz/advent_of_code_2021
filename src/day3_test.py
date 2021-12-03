@@ -18,3 +18,6 @@ class TestDay3:
 
     def test_sample_data_part_1_returns_150(self):
         assert day3.part1(test_file_path) == 198
+
+    def test_sample_data_part_2_returns_230(self):
+        assert day3.part2(test_file_path) == 230
