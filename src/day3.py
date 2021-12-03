@@ -17,36 +17,37 @@ def to_decimal(arr):
 
 
 def most_common_digit(np_array: np.array):
+    """Returns the most common digit in a binary array
+        If the number of 0s and 1s is the same, it returns 1
+
+        It uses floor instead of round, because round 
+        goes to the nearest even number in case of being halfway
+        e.g. round(0.5) == 0 and round(1.5) == 2
+    """
     return np.floor(np_array.mean(axis=0) + 0.5).astype('int')
+
+
+def least_common_digit(np_array: np.array):
+    return most_common_digit(np_array) ^ True
 
 
 def part1(path):
     data = read_data(path)
-    gamma_array = data.mean(axis=0).round().astype('int')
+    gamma_array = most_common_digit(data)
     epsilon_array = gamma_array ^ True
     return to_decimal(gamma_array) * to_decimal(epsilon_array)
 
 
-def calculate_oxygen(data, column_no=0):
+def calculate_metric(data, selector, column_no=0):
     column = data[:, column_no]
-    most_common_digit_in_column = most_common_digit(column)
-    mask = column == most_common_digit_in_column
-    oxygen = data[mask]
-    return calculate_oxygen(oxygen, column_no + 1) if len(oxygen) > 1 else to_decimal(oxygen[0])
-
-
-def calculate_co2(data, column_no=0):
-    column = data[:, column_no]
-    most_common_digit_in_column = most_common_digit(column)
-    mask = column != most_common_digit_in_column
-    co2 = data[mask]
-    return calculate_co2(co2, column_no + 1) if len(co2) > 1 else to_decimal(co2[0])
+    filtered_data = data[column == selector(column)]
+    return calculate_metric(filtered_data, selector, column_no + 1) if len(filtered_data) > 1 else to_decimal(filtered_data[0])
 
 
 def part2(path):
     data = read_data(path)
-    oxygen = calculate_oxygen(data)
-    co2 = calculate_co2(data)
+    oxygen = calculate_metric(data, most_common_digit)
+    co2 = calculate_metric(data, least_common_digit)
     return oxygen * co2
 
 
