@@ -10,12 +10,13 @@ def read_data(path):
             data.append(digits)
     return np.array(data)
 
-to_decimal_array = np.array([2048,1024,512,256,128,64,32,16, 8, 4, 2, 1])
 
 def to_decimal(arr):
+    to_decimal_array = 2 ** np.arange(len(arr)-1, -1, -1)
     return (arr*to_decimal_array).sum()
 
-def main(path):
+
+def part1(path):
     data = read_data(path)
     gamma_array = data.mean(axis=0).round().astype('int')
     epsilon_array = gamma_array ^ True
@@ -23,4 +24,4 @@ def main(path):
 
 
 if __name__ == "__main__":
-    print(f"{main(sys.argv[1])} result of multiplying position")
+    print(f"{part1(sys.argv[1])} result of multiplying position")
