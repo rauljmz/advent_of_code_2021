@@ -16,13 +16,19 @@ class Bingo():
         self.numbers = numbers
         self.cards = cards
 
-    def _calculate_winner(self, axis):
-        winner = np.where(self.cards.sum(axis=axis) ==
+    def _calculate_winner_index(self, axis):
+        return np.where(self.cards.sum(axis=axis) ==
                           (self.cards.shape[axis] * -1))[0]
-        return self.cards[winner] if winner.size > 0 else None
+
+    def winner_index(self):
+        for axis in range(1,len(self.cards.shape)):
+            index = self._calculate_winner_index(axis)
+            if(index.size > 0):
+                return index
 
     def winner(self):
-        return self._calculate_winner(1) or self._calculate_winner(2)
+        index = self.winner_index()
+        return self.cards[index] if index is not None else None
 
     def play(self):
         for number in self.numbers:
@@ -30,6 +36,16 @@ class Bingo():
             winner = self.winner()
             if winner is not None:
                 return calculate_points(winner, number)
+
+    def play_last_card(self):
+        for number in self.numbers:
+            self.cards[self.cards == number] = -1
+            winner_index = self.winner_index()
+            if winner_index is not None:
+                if self.cards.shape[0] == 1:
+                    return calculate_points(self.cards[winner_index], number)
+                else:
+                    self.cards = np.delete(self.cards, winner_index, axis=0)
 
 
 def create_bingo_game(path) -> Bingo:
@@ -60,5 +76,10 @@ def part1(path):
     return bingo.play()
 
 
+def part2(path):
+    bingo = create_bingo_game(path)
+    return bingo.play_last_card()
+
+
 if __name__ == "__main__":
-    print(f"{part1(sys.argv[1])} is the winning bingo score")
+    print(f"{part2(sys.argv[1])} is the winning bingo score")

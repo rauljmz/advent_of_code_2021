@@ -33,3 +33,6 @@ class TestDay4:
             ]
         ))
         assert bingo.winner().sum() == 5
+
+    def test_part_2_returns_1924(self):
+        assert day4.part2(test_file_path) == 1924
