@@ -17,14 +17,14 @@ def create_board_for(points):
 
 def mark_points_on_board(points):
     board = create_board_for(points)
-    increments = points[:,1] - points[:,0]
-    for index in range(points.shape[0]):
-        no_points_in_line = np.absolute(increments[index]).max()
-        step = (increments[index] / no_points_in_line).astype('int')
+    for pair_of_points in points:
+        increment = pair_of_points[1] - pair_of_points[0]
+        no_points_in_line = np.absolute(increment).max()
+        step = (increment / no_points_in_line).astype('int')
         for line_point in range(no_points_in_line + 1):
             board[
-                points[index,0,0]+step[0]*line_point,
-                points[index,0,1]+step[1]*line_point,
+                pair_of_points[0,0]+step[0]*line_point,
+                pair_of_points[0,1]+step[1]*line_point,
                 ] +=1
     return board
 
