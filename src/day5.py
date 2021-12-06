@@ -8,27 +8,15 @@ def load_points(path) -> np.array:
         array = np.fromstring(contents, sep=",", dtype="int")
         return array.reshape(int(array.size/4), 2, 2)
 
-
-def part1(path):
-    points = load_points(path)
-    straight_lines = points[np.where((points[:,0] - points[:,1]) == 0)[0]]
-    max_number = straight_lines.max()
-    board = np.zeros((max_number+1, max_number+1), dtype='uint')
-    for pair in straight_lines:
-        xs = pair[:,0]
-        ys = pair[:,1]
-        xs.sort()
-        ys.sort()
-        for x in range(xs[0], xs[1] + 1):
-            for y in range(ys[0], ys[1] + 1):
-                board[x,y] +=1
-    print(board)
+def number_of_line_crosses(board):
     return np.where(board >= 2)[0].size
 
-def part2(path):
-    points = load_points(path)
+def create_board_for(points):
     max_number = points.max()
-    board = np.zeros((max_number+1, max_number+1), dtype='uint')
+    return np.zeros((max_number+1, max_number+1), dtype='uint')
+
+def mark_points_on_board(points):
+    board = create_board_for(points)
     increments = points[:,1] - points[:,0]
     for index in range(points.shape[0]):
         no_points_in_line = np.absolute(increments[index]).max()
@@ -38,8 +26,20 @@ def part2(path):
                 points[index,0,0]+step[0]*line_point,
                 points[index,0,1]+step[1]*line_point,
                 ] +=1
+    return board
+
+def part1(path):
+    points = load_points(path)
+    straight_lines = points[np.where((points[:,0] - points[:,1]) == 0)[0]]
+    board = mark_points_on_board(straight_lines)
     print(board)
-    return np.where(board >= 2)[0].size
+    return number_of_line_crosses(board)
+
+def part2(path):
+    points = load_points(path)
+    board = mark_points_on_board(points)
+    print(board)
+    return number_of_line_crosses(board)
 
 if __name__ == "__main__":
     print(f"{part2(sys.argv[1])} 2 lines overlap")
