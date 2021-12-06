@@ -10,3 +10,5 @@ class TestDay5:
     def test_load_data_returns_array_of_shape_10_2_2(self):
         assert day5.load_points(test_file_path).shape == (10,2,2)
 
+    def test_part_2_returns_12(self):
+        assert day5.part2(test_file_path) == 12
