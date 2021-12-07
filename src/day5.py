@@ -20,12 +20,12 @@ def create_board_for(points):
 
 def mark_points_on_board(points):
     board = create_board_for(points)
-    for pair_of_points in points:
-        increment = pair_of_points[1] - pair_of_points[0]
-        no_points_in_line = np.absolute(increment).max() + 1
-        step = (increment / (no_points_in_line-1)).astype('int')
-        for line_point in range(no_points_in_line):
-            board[tuple(pair_of_points[0]+(step*line_point))] += 1
+    increments = points[:, 1] - points[:, 0]
+    no_points_in_lines = np.absolute(increments).max(axis=1) + 1
+    steps = (increments / (no_points_in_lines[:, np.newaxis]-1)).astype('int')
+    for index in range(steps.shape[0]):
+        for line_point in range(no_points_in_lines[index]):
+            board[tuple(points[index, 0]+(steps[index]*line_point))] += 1
     return board
 
 
