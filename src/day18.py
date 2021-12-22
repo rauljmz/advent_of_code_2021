@@ -1,4 +1,4 @@
-from math import floor, ceil
+from math import fabs, floor, ceil
 
 
 class Number:
@@ -39,49 +39,60 @@ class Number:
             node = node.y
         return node, "y", node.y
 
+    def get_level(self, level):
+        if isinstance(self.x, int) and isinstance(self.y, int) and level <= 0:
+            return self
+        if isinstance(self.x, Number):
+            child_node = self.x.get_level(level-1)
+            if child_node is not None:
+                 return child_node
+        
+        if isinstance(self.y, Number):
+            child_node = self.y.get_level(level-1)
+            if child_node is not None:
+                 return child_node
+        return None
 
-    def explode(self, level=0):
-        exploded = False
-        if level >= 4 and isinstance(self.x,int) and isinstance(self.y,int):
-            print("exploding", self)
-            number, position, current = self.next_digit()
+    def get_first_two_digit_value(self):
+        if isinstance(self.x, int) and self.x >= 10:
+            return self, "x", self.x
+        if isinstance(self.y, int) and self.y >= 10:
+            return self, "y", self.y
+        if isinstance(self.x, Number):
+            node, position, value = self.x.get_first_two_digit_value()
+            if node:
+                return node, position, value
+        if isinstance(self.y, Number):
+            node, position, value = self.y.get_first_two_digit_value()
+            if node:
+                return node, position, value
+        return None, None, None
+
+    def explode(self):
+        node_to_explode = self.get_level(4)
+        if node_to_explode is not None:        
+            print("exploding", node_to_explode)
+            number, position, current = node_to_explode.next_digit()
             if current is not None:
-                setattr(number, position, current + self.y)
-            number, position, current = self.previous_digit()
+                setattr(number, position, current + node_to_explode.y)
+            number, position, current = node_to_explode.previous_digit()
             if current is not None:
-                setattr(number, position, current + self.x)
-            setattr(self.parent, self.parent_position, 0)
+                setattr(number, position, current + node_to_explode.x)
+            setattr(node_to_explode.parent, node_to_explode.parent_position, 0)
             return True
-        else:
-            if isinstance(self.x, Number):
-                exploded = self.x.explode(level+1) or exploded
-            if isinstance(self.y, Number):
-                exploded = self.y.explode(level+1) or exploded
-        return exploded
+        return False
     
     def split(self):
-        splitted = False
-        if isinstance(self.x, Number):
-            splitted = self.x.split() or splitted
-        elif self.x >= 10:
+        node_to_split, position, value = self.get_first_two_digit_value()
+        if node_to_split is not None:
             n = Number()
-            n.x = floor(self.x/2)
-            n.y = ceil (self.x/2)
-            n.parent_position = "x"
-            n.parent = self
-            self.x = n
-            splitted = True
-        if isinstance(self.y, Number):
-            splitted = self.y.split() or splitted
-        elif self.y >= 10:
-            n = Number()
-            n.x = floor(self.y/2)
-            n.y = ceil (self.y/2)
-            n.parent_position = "y"
-            n.parent = self
-            self.y = n
-            splitted = True
-        return splitted
+            n.x = floor(value/2)
+            n.y = ceil (value/2)
+            n.parent_position = position
+            n.parent = node_to_split
+            setattr(node_to_split, position, n)
+            return True
+        return False
 
     def __add__(self, other):
         return Number.parse(f"[{self},{other}]")
@@ -116,14 +127,11 @@ class Number:
     
     def simplify(self):
         print(self)
-        simplified = False
+        exploded = False
         while self.explode():
             print("explode", self)
-            simplified = True
-        while self.split():
-            print("split", self)
-            simplified = True
-        if simplified:
+            exploded = True
+        if self.split() or exploded:
             self.simplify()
 
 def add_sequence(sequence):
