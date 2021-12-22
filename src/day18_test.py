@@ -47,7 +47,7 @@ class TestNumber:
     @pytest.mark.parametrize("st_number,magnitude", [
         ("[9,1]", 29),
         ("[[1,2],[[3,4],5]]", 143),
-        ("[[[[8,7],[7,7]],[[8,6],[7,7]]],[[[0,7],[6,6]],[8,7]]]",3488)
+        ("[[[[8,7],[7,7]],[[8,6],[7,7]]],[[[0,7],[6,6]],[8,7]]]", 3488)
     ])
     def test_magnitude_of_numbers(self, st_number, magnitude):
         number = Number.parse(st_number)
@@ -66,6 +66,10 @@ class TestNumber:
             "[[[[4,0],[5,4]],[[7,7],[6,0]]],[[8,[7,7]],[[7,9],[5,0]]]]",
             "[[2,[[0,8],[3,4]]],[[[6,7],1],[7,[1,6]]]]",
             "[[[[6,7],[6,7]],[[7,7],[0,7]]],[[[8,7],[7,7]],[[8,8],[8,0]]]]"
+         ), (
+            "[[[[7,0],[7,7]],[[7,7],[7,8]]],[[[7,7],[8,8]],[[7,7],[8,7]]]]",
+            "[7,[5,[[3,8],[1,4]]]]",
+            "[[[[7,7],[7,8]],[[9,5],[8,7]]],[[[6,8],[0,8]],[[9,9],[9,0]]]]"
         )])
     def test_addition(self, st_number1, st_number2, st_result):
         n1 = Number.parse(st_number1)
@@ -86,7 +90,7 @@ class TestAddSequence:
         result = add_sequence(sequence)
         assert str(result) == "[[[[5,0],[7,4]],[5,5]],[6,6]]"
 
-    def stest_sequence_of_more_numbers(self):
+    def test_sequence_of_more_numbers(self):
         sequence = [
             "[[[0,[4,5]],[0,0]],[[[4,5],[2,6]],[9,5]]]",
             "[7,[[[3,7],[4,3]],[[6,3],[8,8]]]]",

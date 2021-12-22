@@ -1,6 +1,5 @@
 from math import fabs, floor, ceil
 
-
 class Number:
     def __str__(self):
         return f"[{self.x},{self.y}]"
@@ -40,7 +39,7 @@ class Number:
         return node, "y", node.y
 
     def get_level(self, level):
-        if isinstance(self.x, int) and isinstance(self.y, int) and level <= 0:
+        if isinstance(self.x, int) and isinstance(self.y, int) and level == 0:
             return self
         if isinstance(self.x, Number):
             child_node = self.x.get_level(level-1)
@@ -56,12 +55,12 @@ class Number:
     def get_first_two_digit_value(self):
         if isinstance(self.x, int) and self.x >= 10:
             return self, "x", self.x
-        if isinstance(self.y, int) and self.y >= 10:
-            return self, "y", self.y
         if isinstance(self.x, Number):
             node, position, value = self.x.get_first_two_digit_value()
             if node:
                 return node, position, value
+        if isinstance(self.y, int) and self.y >= 10:
+            return self, "y", self.y
         if isinstance(self.y, Number):
             node, position, value = self.y.get_first_two_digit_value()
             if node:
@@ -70,8 +69,8 @@ class Number:
 
     def explode(self):
         node_to_explode = self.get_level(4)
-        if node_to_explode is not None:        
-            print("exploding", node_to_explode)
+        if node_to_explode is not None:
+            # print("exploding", node_to_explode)
             number, position, current = node_to_explode.next_digit()
             if current is not None:
                 setattr(number, position, current + node_to_explode.y)
@@ -79,18 +78,21 @@ class Number:
             if current is not None:
                 setattr(number, position, current + node_to_explode.x)
             setattr(node_to_explode.parent, node_to_explode.parent_position, 0)
+            # print(self)
             return True
         return False
     
     def split(self):
         node_to_split, position, value = self.get_first_two_digit_value()
         if node_to_split is not None:
+            # print("splitting", node_to_split)
             n = Number()
             n.x = floor(value/2)
             n.y = ceil (value/2)
             n.parent_position = position
             n.parent = node_to_split
             setattr(node_to_split, position, n)
+            # print(self)
             return True
         return False
 
@@ -126,10 +128,8 @@ class Number:
         return current
     
     def simplify(self):
-        print(self)
         exploded = False
         while self.explode():
-            print("explode", self)
             exploded = True
         if self.split() or exploded:
             self.simplify()
@@ -147,3 +147,7 @@ def add_sequence(sequence):
     return acu
 
 
+if __name__ == "__main__":
+    with open("./data/day18/input.txt") as file:
+        numbers = file.readlines()
+        print(f"Result: {add_sequence(numbers).magnitude()}")
