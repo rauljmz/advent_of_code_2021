@@ -146,8 +146,22 @@ def add_sequence(sequence):
         acu = acu + numbers[i]
     return acu
 
+def add_two_numbers(i,j):
+    return Number.parse(f"[{i},{j}]")
+
+def largest_magnitude(sequence):
+    largest = 0
+    for i in range(len(sequence)):
+        vi = sequence[i]
+        for j in range(i+1, len(sequence)):
+            vj = sequence[j]
+            largest = max(
+                largest, 
+                add_two_numbers(vi,vj).magnitude(), 
+                add_two_numbers(vj,vi).magnitude()) 
+    return largest
 
 if __name__ == "__main__":
     with open("./data/day18/input.txt") as file:
         numbers = file.readlines()
-        print(f"Result: {add_sequence(numbers).magnitude()}")
+        print(f"Result: {largest_magnitude(numbers)}")
