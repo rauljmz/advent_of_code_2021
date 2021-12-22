@@ -1,140 +1,133 @@
 from math import floor, ceil
 
-class Symbol:
-    def __init__(self, value, previous):
-        self.value = value
-        self.previous = previous
-        self.next = None
-        if previous is not None:
-            previous.set_next(self)
-
-    def set_next(self, next):
-        self.next = next
-
-    def __str__(self):
-        return self.value
-
-    @staticmethod
-    def build(value, previousvalue):
-        mapping = {
-            "[": BracketOpen,
-            "]": BracketClose,
-            ",": Separator,
-        }
-        if value in mapping:
-            return mapping[value](previousvalue)
-        else:
-            if isinstance(previousvalue, Digit):
-                previousvalue.value = previousvalue.value*10 + int(value)
-                return previousvalue
-            return Digit(value, previousvalue)
-
-
-class BracketOpen(Symbol):
-    def __init__(self, previous):
-        super().__init__("[", previous)
-
-
-class BracketClose(Symbol):
-    def __init__(self, previous):
-        super().__init__("]", previous)
-
-
-class Separator(Symbol):
-    def __init__(self, previous):
-        super().__init__(",", previous)
-
-
-class Digit(Symbol):
-    def __init__(self, value, previous):
-        super().__init__(int(value), previous)
-    
-    def __str__(self):
-        return str(self.value)
-
 
 class Number:
-    def __init__(self, representation):
-        symbols = []
-        for symbol in representation:
-            symbols.append(
-                Symbol.build(symbol, symbols[-1] if len(symbols) > 0 else None)
-            )
-        self.first_symbol = symbols[0]
-
-    def explode(self):
-        depth = 0
-        symbol = self.first_symbol
-        while symbol is not None and (depth < 5 or not isinstance(symbol, Digit)):
-            if isinstance(symbol, BracketOpen):
-                lastOpen = symbol
-                depth += 1
-            elif isinstance(symbol, BracketClose):
-                depth -= 1
-            symbol = symbol.next if symbol else None
-        if symbol is not None:
-            print(self)
-            print(f'exploding at {symbol}')
-            value = symbol.value
-            prev_symbol = symbol.previous
-            while not isinstance(prev_symbol, Digit) and prev_symbol is not None:
-                prev_symbol = prev_symbol.previous
-            if prev_symbol is not None:
-                prev_symbol.value += value
-            value = symbol.next.next.value
-            next_symbol = symbol.next.next.next
-            while not isinstance(next_symbol, Digit) and next_symbol is not None:
-                next_symbol = next_symbol.next
-            if next_symbol is not None:
-                next_symbol.value += value
-            close = symbol.next.next.next
-            zero = Digit(0,lastOpen.previous)
-            zero.set_next(close.next)
-            close.previous = zero
-            self.explode()
-
-    def split(self):
-        done = False
-        for symbol in self:
-            if isinstance(symbol, Digit) and (symbol.value >= 10):
-                print(self)
-                print(f'splitting at {symbol}')
-                open = BracketOpen(symbol.previous)
-                x = Digit(floor(symbol.value / 2),open)
-                sep = Separator(x)
-                y = Digit(ceil(symbol.value / 2), sep)
-                close = BracketClose(y)
-                close.set_next(symbol.next)
-                symbol.next.previous = close
-                done = True
-        return done
-            
-
-    def __iter__(self):
-        self.current = self.first_symbol
-        return self
-
-    def __next__(self):
-        if self.current:
-            tmp = self.current
-            self.current = self.current.next
-            return tmp
-        else:
-            raise StopIteration
-
     def __str__(self):
-        return "".join(map(str, self))
+        return f"[{self.x},{self.y}]"
+
+    def __init__(self):
+        self.parent = None
+        self.parent_position = None
+        self.x = None
+        self.y = None
+
+    def next_digit(self):
+        node = self
+        while node.parent_position == "y":
+            node = node.parent
+        if node.parent_position is None:
+            return None, None, None
+        node = node.parent
+        if not isinstance(node.y, Number):
+            return node, "y", node.y
+        node = node.y
+        while isinstance(node.x, Number):
+            node = node.x
+        return node, "x", node.x
+   
+    def previous_digit(self):
+        node = self
+        while node.parent_position == "x":
+            node = node.parent
+        if node.parent_position is None:
+            return None, None, None
+        node = node.parent
+        if not isinstance(node.x, Number):
+            return node, "x", node.x
+        node = node.x
+        while isinstance(node.y, Number):
+            node = node.y
+        return node, "y", node.y
+
+
+    def explode(self, level=0):
+        exploded = False
+        if level >= 4 and isinstance(self.x,int) and isinstance(self.y,int):
+            print("exploding", self)
+            number, position, current = self.next_digit()
+            if current is not None:
+                setattr(number, position, current + self.y)
+            number, position, current = self.previous_digit()
+            if current is not None:
+                setattr(number, position, current + self.x)
+            setattr(self.parent, self.parent_position, 0)
+            return True
+        else:
+            if isinstance(self.x, Number):
+                exploded = self.x.explode(level+1) or exploded
+            if isinstance(self.y, Number):
+                exploded = self.y.explode(level+1) or exploded
+        return exploded
+    
+    def split(self):
+        splitted = False
+        if isinstance(self.x, Number):
+            splitted = self.x.split() or splitted
+        elif self.x >= 10:
+            n = Number()
+            n.x = floor(self.x/2)
+            n.y = ceil (self.x/2)
+            n.parent_position = "x"
+            n.parent = self
+            self.x = n
+            splitted = True
+        if isinstance(self.y, Number):
+            splitted = self.y.split() or splitted
+        elif self.y >= 10:
+            n = Number()
+            n.x = floor(self.y/2)
+            n.y = ceil (self.y/2)
+            n.parent_position = "y"
+            n.parent = self
+            self.y = n
+            splitted = True
+        return splitted
 
     def __add__(self, other):
-        result = Number(f"[{self},{other}]")
-        result.explode()
-        while result.split():
-            result.explode()
-        # print(result)
-        return result
+        return Number.parse(f"[{self},{other}]")
+
+    @staticmethod
+    def parse(value):
+        position = "x"
+        current = None
+        for (i, d) in enumerate(value):
+            if d == "[":
+                if current is not None:
+                    inner = Number()
+                    setattr(current, position, inner)
+                    inner.parent = current
+                    inner.parent_position = position
+                    current = inner
+                else:
+                    current = Number()
+                position = "x"
+            elif d == "]":
+                position = "x"
+                current = current.parent if current.parent is not None else current
+            elif d == ",":
+                position = "y"
+            elif str.isdigit(d):
+                v = int(value[i-1:i+1]) if str.isdigit(value[i-1]) else int(d)
+                setattr(current, position, v)
+
+        if current is not None:
+            current.simplify()            
+        return current
+    
+    def simplify(self):
+        print(self)
+        simplified = False
+        while self.explode():
+            print("explode", self)
+            simplified = True
+        while self.split():
+            print("split", self)
+            simplified = True
+        if simplified:
+            self.simplify()
 
 def add_sequence(sequence):
-    numbers = tuple(map(Number, sequence))
+    numbers = tuple(map(Number.parse, sequence))
     acu = numbers[0]
     for i in range(1, len(numbers)):
         acu = acu + numbers[i]
