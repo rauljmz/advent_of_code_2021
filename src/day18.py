@@ -133,6 +133,11 @@ class Number:
             exploded = True
         if self.split() or exploded:
             self.simplify()
+    
+    def magnitude(self):
+        magnitude_x = 3 * self.x if isinstance(self.x, int) else 3 * self.x.magnitude()
+        magnitude_y = 2 * self.y if isinstance(self.y, int) else 2 * self.y.magnitude()
+        return magnitude_x + magnitude_y
 
 def add_sequence(sequence):
     numbers = tuple(map(Number.parse, sequence))
@@ -140,3 +145,5 @@ def add_sequence(sequence):
     for i in range(1, len(numbers)):
         acu = acu + numbers[i]
     return acu
+
+
